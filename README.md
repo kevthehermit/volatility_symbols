@@ -2,9 +2,9 @@
 
 This tool can be used to generate an ISF file for Volatitlity3. 
 
-*__WARNING__* - This tool will download 700MB - 1Gb of data per kernel in order to generate a given symbol set. The resulting ISF file is compressed to approx 3Mb
+*__WARNING__* - This tool will download 700MB - 1Gb of data per kernel in order to generate a given symbol set. The resulting ISF file is compressed to approx 3Mb.
 
-You can also check the [ISF Server]('https://isf-server.techanarchy.net/') and search / download a precompiled set. 
+You can also check the https://isf-server.techanarchy.net to search / download a precompiled ISF File. 
 
 ### Overview
 
