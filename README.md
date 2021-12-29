@@ -1,2 +1,2 @@
-# volatility_profiles
-Volatility Profiles
+# volatility_symbols
+Volatility symbols
