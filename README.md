@@ -1,8 +1,10 @@
 # volatility_symbols
 
 This tool can be used to generate an ISF file for Volatitlity3. 
-You can also check the [ISF Server]('https://isf-server.techanarchy.net/') and search / download a precompiled set. 
 
+*__WARNING__* - This tool will download 700MB - 1Gb of data per kernel in order to generate a given symbol set. The resulting ISF file is compressed to approx 3Mb
+
+You can also check the [ISF Server]('https://isf-server.techanarchy.net/') and search / download a precompiled set. 
 
 ### Overview
 
@@ -39,6 +41,6 @@ To generate a symbol file for `Ubuntu` `5.11.0-43-generic` use the following com
 
 `python3 symbol_maker.py -d ubuntu -k '5.11.0-43-generic' `
 
-To generate a symbol file `AWS` `Ubuntu` `4.15.0-1048-aws` use the following command
+To generate a symbol file for `AWS` `Ubuntu` `4.15.0-1048-aws` use the following command
 
 `python3 symbol_maker.py -d ubuntu -b 'linux-aws' -k '4.15.0-1048-aws'`
