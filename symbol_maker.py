@@ -11,6 +11,8 @@ from pathlib import Path
 
 from distributions.ubuntu_base import UbuntuBase
 from distributions.debian_base import DebianBase
+from distributions.fedora_base import FedoraBase
+from distributions.amazon_base import AmazonBase
 
 
 def create_isf(system_map, vmlinux, kernel, output_path):
@@ -50,6 +52,10 @@ def main(target_distro, kernel_filter, branch):
         distro = UbuntuBase(branch)
     elif target_distro == 'debian':
         distro = DebianBase(branch)
+    elif target_distro == 'fedora':
+        distro = FedoraBase(branch)
+    elif target_distro == 'amazon':
+        distro = AmazonBase(branch)
 
     distro.get_kernel_list(kernel_filter)
 
@@ -68,14 +74,22 @@ def main(target_distro, kernel_filter, branch):
 
         valid = distro.validate_links(kernel)
         if valid:
-            logger.info('Processing Debs')
-            system_map, vmlinux = distro.extract_files(symbol_set)
+            logger.info(f'Processing Files for {kernel}')
+
+            try:
+                system_map, vmlinux = distro.extract_files(symbol_set)
+            except Exception as err:
+                logger.error(f'Could not extract files: {err}')
 
         if system_map and vmlinux:
-            create_isf(system_map, vmlinux, kernel, output_path)
-            logger.info("Cleanup Temp Files")
-            os.remove(system_map)
-            os.remove(vmlinux)
+            try:
+                create_isf(system_map, vmlinux, kernel, output_path)
+            except Exception as err:
+                logger.error(f'Could not create ISF File: {err}')
+
+        logger.info("Cleanup Temp Files")
+        os.remove(system_map)
+        os.remove(vmlinux)
 
 if __name__ == '__main__':
 
@@ -84,7 +98,7 @@ if __name__ == '__main__':
                         "--distro",
                         dest = 'distro',
                         help = "Target Distribution",
-                        choices = ['ubuntu', 'debian'],
+                        choices = ['ubuntu', 'debian', 'fedora', 'amazon'],
                         required = True)
                         
     parser.add_argument("-k",
