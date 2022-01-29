@@ -11,8 +11,8 @@ class UbuntuBase:
     def __init__(self, branch):
         self.operating_system = 'ubuntu'
         self.supported_base = ['linux', 'linux-aws', 'linux-azure', 'linux-gcp']
-        self.kernel_pattern = '<a href="linux-modules-(.*?).deb">'
-        self.debug_pattern = '<a href="linux-image-(.*?).deb">'
+        self.kernel_pattern = '<a href="(linux-modules-(.*?).deb)">'
+        self.debug_pattern = '<a href="(linux-image-(.*?).deb)">'
         self.kernel_pairs = {}
         
         if branch in self.supported_base:
@@ -28,35 +28,44 @@ class UbuntuBase:
         kernel_list = requests.get(self.kernel_url)
         kernel_debs = re.findall(self.kernel_pattern, kernel_list.text)
 
-        logger.info(f'Fetching list of debug kernels from {self.kernel_url}')
+        logger.info(f'Fetching list of debug kernels from {self.debug_url}')
         debug_list = requests.get(self.debug_url)
         debug_debs = re.findall(self.debug_pattern, debug_list.text)
 
         logger.info('Searching for Debian Packages')
         for match in kernel_debs:
-            # Ignore some of the results to prevent duplicates
-            if any(x in match for x in ['-dbg', 'extra-']):
-                continue
-            logger.debug(f'Found: {match}')
 
-            # Find the matching debug symbols
-            pattern = match.split('_', 1)[0]
-            for item in debug_debs:
-                if item.startswith(pattern):
-                    debug_deb = f'{self.debug_url}linux-image-{item}ddeb'
+            deb_path = match[0]
+            kernel_string = match[1].split('-unsigned')[0]
+
+            # Ignore some of the results to prevent duplicates
+            if any(x in kernel_string for x in ['-dbg', 'extra-']):
+                continue
+            logger.debug(f'Found: {kernel_string}')
+
+            # Find the matching debug 
+            debug_deb = None
+            pattern = kernel_string.split('_', 1)[0]
+
+            for debug_path, debug_kernel in debug_debs:
+                if debug_kernel.startswith(pattern) or debug_kernel.startswith(f'unsigned-{pattern}'):
+                    debug_deb = f'{self.debug_url}{debug_path}'
                     break
 
-            if kernel_filter == 'all' or match == kernel_filter:
-                self.kernel_pairs[match] = {
-                    "kernel_deb": f'{self.kernel_url}linux-modules-{match}.deb',
-                    "debug_deb": debug_deb,
-                    "valid": False,
-                    "banner": '',
-                    "isf_file": False
-                    }
+            if debug_deb:
+                if kernel_filter == 'all' or match == kernel_filter:
+                    #print(debug_deb, f'{self.kernel_url}{deb_path}')
+                    self.kernel_pairs[kernel_string] = {
+                        "kernel_deb": f'{self.kernel_url}{deb_path}',
+                        "debug_deb": debug_deb,
+                        "valid": False,
+                        "banner": '',
+                        "isf_file": False
+                        }
+                else:
+                    logger.debug('Ignored by filter')
             else:
-                logger.debug('Ignored by filter')
-
+                logger.warning(f'Unable to find matching debug deb for {match}')
 
     def validate_links(self, kernel):
         """For each pair of deb files make HEAD requests to confirm files are present"""
