@@ -11,7 +11,7 @@ class UbuntuBase:
     def __init__(self, branch):
         self.operating_system = 'ubuntu'
         self.supported_base = ['linux', 'linux-aws', 'linux-azure', 'linux-gcp']
-        self.search_pattern = '<a href="linux-modules-(.*?).deb">'
+        self.kernel_pattern = '<a href="linux-modules-(.*?).deb">'
         self.debug_pattern = '<a href="linux-image-(.*?).deb">'
         self.kernel_pairs = {}
         
@@ -26,7 +26,7 @@ class UbuntuBase:
         """Parses the `kernel_url` for any matching kernel deb files"""
         logger.info(f'Fetching list of kernels from {self.kernel_url}')
         kernel_list = requests.get(self.kernel_url)
-        kernel_debs = re.findall(self.search_pattern, kernel_list.text)
+        kernel_debs = re.findall(self.kernel_pattern, kernel_list.text)
 
         logger.info(f'Fetching list of debug kernels from {self.kernel_url}')
         debug_list = requests.get(self.debug_url)
@@ -46,7 +46,7 @@ class UbuntuBase:
                     debug_deb = f'{self.debug_url}linux-image-{item}ddeb'
                     break
 
-            if any(x in match for x in ['all', kernel_filter]):
+            if kernel_filter == 'all' or match == kernel_filter:
                 self.kernel_pairs[match] = {
                     "kernel_deb": f'{self.kernel_url}linux-modules-{match}.deb',
                     "debug_deb": debug_deb,

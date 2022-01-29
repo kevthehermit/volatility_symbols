@@ -87,9 +87,9 @@ def main(target_distro, kernel_filter, branch):
             except Exception as err:
                 logger.error(f'Could not create ISF File: {err}')
 
-        logger.info("Cleanup Temp Files")
-        os.remove(system_map)
-        os.remove(vmlinux)
+            logger.info("Cleanup Temp Files")
+            os.remove(system_map)
+            os.remove(vmlinux)
 
 if __name__ == '__main__':
 

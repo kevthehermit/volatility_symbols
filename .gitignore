@@ -130,3 +130,5 @@ dmypy.json
 
 # Generated Symbol Sets
 symbol_files/*
+scratch
+banners.json

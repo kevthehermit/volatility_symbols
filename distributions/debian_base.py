@@ -31,7 +31,7 @@ class DebianBase:
         for match in kernel_debs:
 
             deb_path = match[0]
-            kernel_string = match[1]
+            kernel_string = match[1].split('-unsigned')[0]
 
             # Ignore some of the results to prevent duplicates
             if any(x in kernel_string for x in ['-dbg']):
@@ -44,7 +44,7 @@ class DebianBase:
                     debug_deb = f'{self.kernel_url}{debug[0]}'
                     break
 
-            if any(x in match for x in ['all', kernel_filter]):
+            if kernel_filter == 'all' or match == kernel_filter:
                 self.kernel_pairs[kernel_string] = {
                     "kernel_deb": f'{self.kernel_url}{deb_path}',
                     "debug_deb": debug_deb,
