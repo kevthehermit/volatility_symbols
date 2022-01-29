@@ -39,22 +39,25 @@ class DebianBase:
             logger.debug(f'Found: {kernel_string}')
 
             # Find the matching debug symbols
+            debug_deb = None
             for debug in kernel_debs:
                 if f'linux-image-{kernel_string}-dbg' in debug[0]:
                     debug_deb = f'{self.kernel_url}{debug[0]}'
                     break
 
-            if kernel_filter == 'all' or match == kernel_filter:
-                self.kernel_pairs[kernel_string] = {
-                    "kernel_deb": f'{self.kernel_url}{deb_path}',
-                    "debug_deb": debug_deb,
-                    "valid": False,
-                    "banner": '',
-                    "isf_file": False
-                    }
+            if debug_deb:
+                if kernel_filter == 'all' or match == kernel_filter:
+                    self.kernel_pairs[kernel_string] = {
+                        "kernel_deb": f'{self.kernel_url}{deb_path}',
+                        "debug_deb": debug_deb,
+                        "valid": False,
+                        "banner": '',
+                        "isf_file": False
+                        }
+                else:
+                    logger.debug('Ignored by filter')
             else:
-                logger.debug('Ignored by filter')
-
+                logger.warning(f'Unable to find matching debug deb for {kernel_string}')
 
     def validate_links(self, kernel):
         """For each pair of deb files make HEAD requests to confirm files are present"""
