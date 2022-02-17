@@ -53,7 +53,7 @@ class UbuntuBase:
                     break
 
             if debug_deb:
-                if kernel_filter == 'all' or match == kernel_filter:
+                if kernel_filter == 'all' or kernel_string == kernel_filter:
                     #print(debug_deb, f'{self.kernel_url}{deb_path}')
                     self.kernel_pairs[kernel_string] = {
                         "kernel_deb": f'{self.kernel_url}{deb_path}',
@@ -65,7 +65,7 @@ class UbuntuBase:
                 else:
                     logger.debug('Ignored by filter')
             else:
-                logger.warning(f'Unable to find matching debug deb for {match}')
+                logger.warning(f'Unable to find matching debug deb for {kernel_string}')
 
     def validate_links(self, kernel):
         """For each pair of deb files make HEAD requests to confirm files are present"""

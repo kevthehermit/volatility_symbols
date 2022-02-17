@@ -1,9 +1,13 @@
 import logging
 import requests
 import tempfile
-
-from debian import debfile
+import tarfile
 from io import BytesIO
+
+import zstandard as zstd
+from debian import debfile
+from arpy import Archive
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +31,42 @@ def process_deb(deb_url, file_pattern):
     f.seek(0)
 
     logger.debug('Creating Deb Object')
-    deb = debfile.DebFile(fileobj = f)
+    try:
+        deb = debfile.DebFile(fileobj = f)
+        tar_files = deb.data.tgz().getmembers()
+        compression_type = "tgz"
+    except Exception as err:
+        print(err)
+        # Some debs now use zst compression which is not supported by debian
+        compression_type = "zst"
+        # Back to start of file
+        f.seek(0)
+
+        # Get the data archive from arpy
+        dpkg_archive = Archive(fileobj=f)
+        dpkg_archive.read_all_headers()
+        data_archive = dpkg_archive.archived_files[b"data.tar.zst"]
+
+        # Decompress with zstandard
+        # We stream copy to another bytes IO to keep it all in memory
+        dctx = zstd.ZstdDecompressor()
+        uncompressed_tar = BytesIO()
+        dctx.copy_stream(data_archive, uncompressed_tar)
+        uncompressed_tar.seek(0)
+
+        # This should be a tar file now. 
+        tar_io = tarfile.open(fileobj=uncompressed_tar)
+        tar_files = tar_io.getmembers()
 
     logger.debug('Searching deb for file')
     # ToDo, dont iterate just read the file from the right location
-    for member in deb.data.tgz().getmembers():
+    for member in tar_files:
         if file_pattern in member.name:
             logger.debug(f"Extracting {member.name}")
-            extracted = deb.data.get_file(member.name)
+            if compression_type == 'tgz':
+                extracted = deb.data.get_file(member.name)
+            else:
+                extracted = tar_io.extractfile(member.name)
             break
     if not extracted:
         return None
@@ -46,5 +78,9 @@ def process_deb(deb_url, file_pattern):
     
         logger.debug(f'Writing {member.name} to {outfile.name}')
         outfile.write(extracted.read())
+
+    # Close file handles
+    f.close()
+    uncompressed_tar.close()
 
     return outfile.name
