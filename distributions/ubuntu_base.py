@@ -11,8 +11,8 @@ class UbuntuBase:
     def __init__(self, branch):
         self.operating_system = 'ubuntu'
         self.supported_base = ['linux', 'linux-aws', 'linux-azure', 'linux-gcp']
-        self.kernel_pattern = '<a href="(linux-modules-(.*?).deb)">'
-        self.debug_pattern = '<a href="(linux-image-(.*?).deb)">'
+        self.kernel_pattern = '<a href="(linux-modules-(.*)_(.*)_(.*.deb))">'
+        self.debug_pattern = '<a href="(linux-image-.*?.deb)">'
         self.kernel_pairs = {}
         
         if branch in self.supported_base:
@@ -36,26 +36,28 @@ class UbuntuBase:
         for match in kernel_debs:
 
             deb_path = match[0]
-            kernel_string = match[1].split('-unsigned')[0]
+            uname_string = match[1]
+            version = match[2]
+            kernel_arch = match[3].replace('.deb', '')
 
             # Ignore some of the results to prevent duplicates
-            if any(x in kernel_string for x in ['-dbg', 'extra-']):
+            if any(x in deb_path for x in ['-dbg', 'extra-']):
                 continue
-            logger.debug(f'Found: {kernel_string}')
+            logger.debug(f'Found: {uname_string}')
 
             # Find the matching debug 
             debug_deb = None
-            pattern = kernel_string.split('_', 1)[0]
 
-            for debug_path, debug_kernel in debug_debs:
-                if debug_kernel.startswith(pattern) or debug_kernel.startswith(f'unsigned-{pattern}'):
+            for debug_path in debug_debs:
+                # Only match if uname and arch match
+                if all(x in debug_path for x in [uname_string, kernel_arch]):
                     debug_deb = f'{self.debug_url}{debug_path}'
                     break
 
             if debug_deb:
-                if kernel_filter == 'all' or kernel_string == kernel_filter:
+                if kernel_filter == 'all' or kernel_filter == uname_string:
                     #print(debug_deb, f'{self.kernel_url}{deb_path}')
-                    self.kernel_pairs[kernel_string] = {
+                    self.kernel_pairs[uname_string] = {
                         "kernel_deb": f'{self.kernel_url}{deb_path}',
                         "debug_deb": debug_deb,
                         "valid": False,
@@ -65,7 +67,7 @@ class UbuntuBase:
                 else:
                     logger.debug('Ignored by filter')
             else:
-                logger.warning(f'Unable to find matching debug deb for {kernel_string}')
+                logger.warning(f'Unable to find matching debug deb for {uname_string}')
 
     def validate_links(self, kernel):
         """For each pair of deb files make HEAD requests to confirm files are present"""
