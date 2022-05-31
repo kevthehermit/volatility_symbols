@@ -1,5 +1,6 @@
 requests
 arpy
 rpmfile
-python-debian
+git+https://salsa.debian.org/python-debian-team/python-debian
+#python-debian # We need zstdf supprt
 zstandard

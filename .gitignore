@@ -132,3 +132,4 @@ dmypy.json
 symbol_files/*
 scratch
 banners.json
+jobs.sh
