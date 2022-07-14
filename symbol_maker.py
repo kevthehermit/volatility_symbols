@@ -13,6 +13,7 @@ from distributions.ubuntu_base import UbuntuBase
 from distributions.debian_base import DebianBase
 from distributions.fedora_base import FedoraBase
 from distributions.amazon_base import AmazonBase
+from distributions.cbl_mariner_base import CBLMariner
 
 
 def create_isf(system_map, vmlinux, kernel, output_path):
@@ -21,7 +22,13 @@ def create_isf(system_map, vmlinux, kernel, output_path):
     banner_path = output_path / 'banner.txt'
     isf_path = output_path / f'{kernel}.json.xz'
 
-    dwarf_args = ['./dwarf2json', 'linux', '--system-map', system_map, '--elf', vmlinux]
+    root = Path(__file__).resolve().parent
+    if os.name == 'nt':
+        dwarf2json = Path(root, "dwarf2json.exe")
+    else:
+        dwarf2json = Path(root, "dwarf2json")
+
+    dwarf_args = [dwarf2json, 'linux', '--system-map', system_map, '--elf', vmlinux]
     logger.debug(dwarf_args)
     logger.info(f'Creating ISF {isf_path}')
     proc = subprocess.run(dwarf_args, capture_output = True)
@@ -56,6 +63,8 @@ def main(target_distro, kernel_filter, branch):
         distro = FedoraBase(branch)
     elif target_distro == 'amazon':
         distro = AmazonBase(branch)
+    elif target_distro == "cbl-mariner":
+        distro = CBLMariner(branch)
 
     distro.get_kernel_list(kernel_filter)
 
@@ -98,7 +107,7 @@ if __name__ == '__main__':
                         "--distro",
                         dest = 'distro',
                         help = "Target Distribution",
-                        choices = ['ubuntu', 'debian', 'fedora', 'amazon'],
+                        choices = ['ubuntu', 'debian', 'fedora', 'amazon', 'cbl-mariner'],
                         required = True)
                         
     parser.add_argument("-k",

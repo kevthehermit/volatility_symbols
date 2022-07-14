@@ -133,3 +133,7 @@ symbol_files/*
 scratch
 banners.json
 jobs.sh
+
+
+# VSCode
+.vscode
