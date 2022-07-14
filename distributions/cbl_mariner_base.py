@@ -34,7 +34,6 @@ class CBLMariner:
             page_data = requests.get(url)
             # If its 200 its the correct page
             if page_data.status_code == 200:
-                # 5.15.48.1-2.cm2
                 rpm_data = re.findall(self.kernel_pattern, page_data.text)
                 for rpm, kernel in rpm_data:
                     if kernel_filter == 'all' or kernel == f'{kernel_filter}.x86_64':

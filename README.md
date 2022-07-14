@@ -44,7 +44,3 @@ To generate a symbol file for `Ubuntu` `5.11.0-43-generic` use the following com
 To generate a symbol file for `AWS` `Ubuntu` `4.15.0-1048-aws` use the following command
 
 `python3 symbol_maker.py -d ubuntu -b 'linux-aws' -k '4.15.0-1048-aws'`
-
-
-
-5.15.48.1-2.cm2
