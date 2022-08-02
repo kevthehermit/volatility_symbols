@@ -15,13 +15,13 @@ If you are targetting a non default kernel, like AWS or Azure you will also need
 ### Usage
 
 ```
-usage: symbol_maker.py [-h] -d {ubuntu,debian} -k KERNEL [-b BRANCH] [-v]
+usage: symbol_maker.py [-h] -d {ubuntu,debian,fedora,amazon,cbl-mariner} -k KERNEL [-b BRANCH] [-v]
 
 Generate a volatilty symbol file for a given distro and kernel version
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
-  -d {ubuntu,debian}, --distro {ubuntu,debian}
+  -d {ubuntu,debian,fedora,amazon,cbl-mariner}, --distro {ubuntu,debian,fedora,amazon,cbl-mariner}
                         Target Distribution
   -k KERNEL, --kernel KERNEL
                         Target Kernel release or 'all' The output of `uname -r`
