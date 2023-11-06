@@ -9,7 +9,7 @@ from debian import debfile
 
 logger = logging.getLogger(__name__)
 
-def process_deb(deb_url, file_pattern):
+def process_deb(deb_url, file_pattern, *args):
     """Takes a URL to a deb file retrieves it and extracts the required file
     file, if found, is saved to a dir with `kernel_name`"""
     logger.debug(f'Fetching Deb File: {deb_url}')
@@ -31,33 +31,57 @@ def process_deb(deb_url, file_pattern):
     logger.debug('Creating Deb Object')
     try:
         deb = debfile.DebFile(fileobj = f)
-        tar_files = deb.data.tgz().getmembers()
-        compression_type = "tgz"
+        if file_pattern == "System.map":
+            file_name = f"/boot/System.map-{args[0]}"
+        elif file_pattern == "boot/vmlinux":
+            file_name = f"/usr/lib/debug/boot/vmlinux-{args[0]}"
+        extracted = deb.data.get_file(file_name)
     except Exception as err:
-        print(err)
-
-    logger.debug('Searching deb for file')
-    # ToDo, dont iterate just read the file from the right location
-    for member in tar_files:
-        if file_pattern in member.name:
-            logger.debug(f"Extracting {member.name}")
-            if compression_type == 'tgz':
-                extracted = deb.data.get_file(member.name)
-            else:
-                extracted = tar_files.extractfile(member.name)
-            break
-    if not extracted:
-        return None
-
-    prefix = 'vmlinux' if 'vmlinux' in member.name else 'System.map'
+        logger.exception(err)
+    
+    prefix = 'vmlinux' if 'vmlinux' in file_name else 'System.map'
 
     with tempfile.NamedTemporaryFile(delete = False,
                                          prefix = prefix) as outfile:
     
-        logger.debug(f'Writing {member.name} to {outfile.name}')
+        logger.debug(f'Writing {file_name} to {outfile.name}')
         outfile.write(extracted.read())
 
     # Close file handles
     f.close()
 
     return outfile.name
+    
+    # logger.debug('Creating Deb Object')
+    # try:
+    #     deb = debfile.DebFile(fileobj = f)
+    #     tar_files = deb.data.tgz().getmembers()
+    #     compression_type = "tgz"
+    # except Exception as err:
+    #     print(err)
+
+    # logger.debug('Searching deb for file')
+    # # ToDo, dont iterate just read the file from the right location
+    # for member in tar_files:
+    #     if file_pattern in member.name:
+    #         logger.debug(f"Extracting {member.name}")
+    #         if compression_type == 'tgz':
+    #             extracted = deb.data.get_file(member.name)
+    #         else:
+    #             extracted = tar_files.extractfile(member.name)
+    #         break
+    # if not extracted:
+    #     return None
+
+    # prefix = 'vmlinux' if 'vmlinux' in member.name else 'System.map'
+
+    # with tempfile.NamedTemporaryFile(delete = False,
+    #                                      prefix = prefix) as outfile:
+    
+    #     logger.debug(f'Writing {member.name} to {outfile.name}')
+    #     outfile.write(extracted.read())
+
+    # # Close file handles
+    # f.close()
+
+    # return outfile.name

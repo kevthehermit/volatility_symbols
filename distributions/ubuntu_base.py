@@ -87,9 +87,9 @@ class UbuntuBase:
         return valid
 
 
-    def extract_files(self, symbol_set):
-        logger.info('Processing Debs')
-        system_map = debfiles.process_deb(symbol_set['kernel_deb'], 'System.map')
-        vmlinux = debfiles.process_deb(symbol_set['debug_deb'], 'boot/vmlinux')
+    def extract_files(self, symbol_set, *args):
+        logger.info(f'Processing Debs for kernel {args[0]}')
+        system_map = debfiles.process_deb(symbol_set['kernel_deb'], 'System.map', args[0])
+        vmlinux = debfiles.process_deb(symbol_set['debug_deb'], 'boot/vmlinux', args[0])
 
         return system_map, vmlinux

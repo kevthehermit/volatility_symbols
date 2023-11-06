@@ -1,5 +1,11 @@
 # volatility_symbols
 
+2023.10.06 - need to install zstd command line tool.
+> To install Zstandard on Ubuntu, Debian, and Linux Mint:
+`sudo apt install zstd`
+> To install Zstandard on CentOS, Fedora, AlmaLinux, and Red Hat:
+`sudo dnf install zstd`
+
 This tool can be used to generate an ISF file for Volatitlity3. 
 
 *__WARNING__* - This tool will download 700MB - 1Gb of data per kernel in order to generate a given symbol set. The resulting ISF file is compressed to approx 3Mb.
