@@ -86,7 +86,7 @@ def main(target_distro, kernel_filter, branch):
             logger.info(f'Processing Files for {kernel}')
 
             try:
-                system_map, vmlinux = distro.extract_files(symbol_set)
+                system_map, vmlinux = distro.extract_files(symbol_set, kernel)
             except Exception as err:
                 logger.error(f'Could not extract files: {err}')
 
